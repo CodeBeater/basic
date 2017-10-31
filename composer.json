@@ -1,5 +1,5 @@
 {
-	"name": "CodeBeater/basic",
+	"name": "codebeater/basic",
 	"description": "A basic caching/minifying engine made purely with PHP.",
     "require": {
         "klein/klein": "^2.1",
