@@ -1,0 +1,9 @@
+{
+	"name": "CodeBeater/basic",
+	"description": "A basic caching/minifying engine made purely with PHP.",
+    "require": {
+        "klein/klein": "^2.1",
+        "voku/html-min": "^1.0",
+        "matthiasmullie/minify": "^1.3"
+    }
+}
