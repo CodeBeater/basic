@@ -132,7 +132,7 @@
 		}
 
 		public function serve($path, $mime = false, $text = false) {
-			if ($text != false) {
+			if ($text !== false) {
 
 				//Checking if a custom mime was requested
 				if ($mime !== false) {
