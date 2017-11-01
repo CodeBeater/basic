@@ -17,10 +17,6 @@
 		"javascript": {
 			"mimes": ["text/javascript", "application/javascript"],
 			"extensions": ["js"]
-		},
-		"jpeg": {
-			"mimes": ["image/jpeg"],
-			"extensions": ["jpg", "jpeg"]
 		}
 	},
 	"index": ["index.php", "index.html"]

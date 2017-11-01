@@ -131,7 +131,7 @@
 			}
 		}
 
-		private function serve($path, $mime = false, $text = false) {
+		public function serve($path, $mime = false, $text = false) {
 			if ($text != false) {
 
 				//Checking if a custom mime was requested
@@ -164,9 +164,19 @@
 
 						header('Content-Type: text/javascript');
 
+					} else if (strpos($path, '.html') || strpos($path, '.php')) {
+
+						header('Content-Type: text/html');
+
 					} else {
 
-						header('Content-Type: ' . mime_content_type($path));
+						//Letting PHP decide the default mime if we can't get it
+						$mime = mime_content_type($path);
+						if ($mime != 'text/plain') {
+							
+							header('Content-Type: ' . mime_content_type($path));
+
+						}
 
 					}
 
