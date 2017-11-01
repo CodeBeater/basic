@@ -182,10 +182,25 @@
 
 				}
 				
-				//Serving the file
-				http_response_code(200);
-				header('Content-Length:' . filesize($path));
-				readfile($path);
+				//Serving the processed PHP or raw file
+				if (strpos($path, '.php')) {
+
+					//Running PHP file
+					ob_start();
+					require_once($path);
+					$html = ob_get_clean();
+
+					http_response_code(200);
+					header('Content-Length:' . strlen($html));
+					echo($html);
+
+				} else {
+
+					http_response_code(200);
+					header('Content-Length:' . filesize($path));
+					readfile($path);					
+					
+				}
 
 				die();
 
