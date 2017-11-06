@@ -108,7 +108,7 @@
 	
 						$cachedPath = ($cachedPath == false ? __DIR__ . '/cache/' . $file : $cachedPath);
 						$this->verifyDirectories($cachedPath);
-						
+
 						file_put_contents($cachedPath, $minifiedText);
 						$this->serve($cachedPath, $detectedMinifier->mimes[0]);
 
@@ -132,41 +132,55 @@
 		}
 
 		public function serve($path, $mime = false, $text = false) {
+
+			//Sanitizing range if necessary
+			if (isset($_SERVER['HTTP_RANGE'])) {
+
+				$range = explode('=', $_SERVER['HTTP_RANGE']);
+				$range = explode('-', $range[1]);
+
+			} else {
+
+				$range = false;
+
+			}
+
+			//Gathering content metadata and determining HTTP response code
+			$response = array();
+			$response['headers'] = array();
 			if ($text !== false) {
 
 				//Checking if a custom mime was requested
 				if ($mime !== false) {
-					header('Content-Type:' . $mime);
+					$response['headers']['Content-Type'] = $mime;
 				}
 
-				//Serving the file
-				http_response_code(200);
-				header('Content-Length:' . strlen($text));
-				echo($text);
-
-				die();
+				//Preparing to serve the content
+				$response['code'] = 200;
+				$response['headers']['Content-Length'] = strlen($text);
+				$response['content'] = $text;
 
 			} else {
 			
 				//Checking if a custom mime was requested
 				if ($mime !== false) {
 
-					header('Content-Type:' . $mime);
+					$response['headers']['Content-Type'] = $mime;
 
 				} else {
 
 					//MIME MAGIC IS A LIE!
 					if (strpos($path, '.css') > 0) {
 
-						header('Content-Type: text/css');
+						$response['headers']['Content-Type'] = 'text/css';
 
 					} else if (strpos($path, '.js') > 0) {
 
-						header('Content-Type: text/javascript');
+						$response['headers']['Content-Type'] = 'text/javascript';
 
 					} else if (strpos($path, '.html') || strpos($path, '.php')) {
 
-						header('Content-Type: text/html');
+						$response['headers']['Content-Type'] = 'text/html';
 
 					} else {
 
@@ -174,7 +188,7 @@
 						$mime = mime_content_type($path);
 						if ($mime != 'text/plain') {
 							
-							header('Content-Type: ' . mime_content_type($path));
+							$response['headers']['Content-Type'] = $mime;
 
 						}
 
@@ -182,29 +196,79 @@
 
 				}
 				
-				//Serving the processed PHP or raw file
+				//Executing the PHP file or acquiring the raw file
 				if (strpos($path, '.php')) {
 
 					//Running PHP file
 					ob_start();
 					require_once($path);
-					$html = ob_get_clean();
-
-					http_response_code(200);
-					header('Content-Length:' . strlen($html));
-					echo($html);
+					$response['content'] = ob_get_clean();		
+					$response['headers']['Content-Length'] = strlen($response['content']);
+					$response['code'] = 200;
 
 				} else {
 
-					http_response_code(200);
-					header('Content-Length:' . filesize($path));
-					readfile($path);					
+					//Reading only the necessary portion of the file
+					if ($range !== false) {
+
+						$fileSize = filesize($path);
+						$beginning = $range[0];
+						$end = (!empty($range[1]) ? $range[1] : $fileSize);
+
+						//Crafting response
+						$response['code'] = 206;
+						$response['headers']['Content-Length'] = (($end - $beginning));
+						$response['headers']['Content-Range'] = 'bytes ' . $beginning . '-' . ($end - 1) . '/' . $fileSize;
+						$response['content'] = '';
+
+						//Reading the file
+						$fh = fopen($path, 'rb');
+						fseek($fh, $beginning, 0);
+					
+						$current = $beginning;
+						while (!feof($fh) && $current <= $end && (connection_status() == 0)) {
+
+							$response['content'] .= fread($fh, min(1026 * 16, ($end - $current)));
+							$current += 1024 * 16;
+
+						}
+
+					} else {
+
+						$response['code'] = 200;
+						$response['content'] = file_get_contents($path);
+						$response['headers']['Content-Length'] = filesize($path);
+						
+					}
 					
 				}
 
-				die();
+			}
+
+			//Checking if we need to crop the response of a processed PHP file/text response
+			if ($range !== false && $response['code'] == 200) {
+
+				$beginning = $range[0];
+				$end = (!empty($range[1]) ? $range[1] : $response['headers']['Content-Length']);
+
+				$response['code'] = 206;
+				$response['content'] = mb_strcut($response['content'], $beginning, $end);
+				$response['headers']['Content-Length'] = strlen($response['content']);
+				$response['headers']['Content-Range'] = 'bytes ' . $beginning . '-' . ($end - 1) . '/' . strlen($response['content']);
 
 			}
+
+			//Outputting the headers and the content
+			http_response_code($response['code']);
+			foreach ($response['headers'] as $header => $value) {
+
+				header($header . ':' . $value);
+
+			}
+
+			echo($response['content']);
+			die();
+
 		}
 
 		private function verifyDirectories($path) {
@@ -221,7 +285,7 @@
 
 				//Creating directory if it doesn't exists
 				$currentDir .= '/' . $dir;
-				if (!is_dir($currentDir)) {
+				if (!is_dir($currentDir) && !file_exists($currentDir)) {
 
 					mkdir($currentDir);
 
