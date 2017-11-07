@@ -109,7 +109,7 @@
 						$cachedPath = ($cachedPath == false ? __DIR__ . '/cache/' . $file : $cachedPath);
 						$this->verifyDirectories($cachedPath);
 
-						file_put_contents($cachedPath, $minifiedText);
+						file_put_contents($cachedPath . '.base', $minifiedText);
 						$this->serve($cachedPath, $detectedMinifier->mimes[0]);
 
 					} else {
@@ -163,6 +163,7 @@
 			} else {
 			
 				//Checking if a custom mime was requested
+				$path .= '.base';
 				if ($mime !== false) {
 
 					$response['headers']['Content-Type'] = $mime;
@@ -296,6 +297,8 @@
 		}
 		
 		public function fileIsTooOld($file) {
+
+			$file .= '.base';
 			if (file_exists($file)) {
 				if (filemtime($file) < time() - $this->config->duration) {
 					return true;
@@ -305,6 +308,7 @@
 			}
 
 			return false;
+
 		}
 
 	}
