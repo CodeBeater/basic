@@ -8,7 +8,7 @@
 	"minifiers": {
 		"html": {
 			"mimes": ["text/html"],
-			"extensions": ["html", "php", "html"]
+			"extensions": ["html", "php"]
 		},
 		"css": {
 			"mimes": ["text/css"],
@@ -17,6 +17,10 @@
 		"javascript": {
 			"mimes": ["text/javascript", "application/javascript"],
 			"extensions": ["js"]
+		},
+		"jpeg": {
+			"mimes": ["image/jpeg"],
+			"extensions": ["jpg", "jpeg"]
 		}
 	},
 	"index": ["index.php", "index.html"]
