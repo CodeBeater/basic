@@ -109,7 +109,7 @@
 						$cachedPath = ($cachedPath == false ? __DIR__ . '/cache/' . $file : $cachedPath);
 						$this->verifyDirectories($cachedPath);
 
-						file_put_contents($cachedPath . '.base', $minifiedText);
+						file_put_contents($this->getBaseFile($cachedPath, true), $minifiedText);
 						$this->serve($cachedPath, $detectedMinifier->mimes[0]);
 
 					} else {
@@ -131,7 +131,23 @@
 			}
 		}
 
-		public function serve($path, $mime = false, $text = false) {
+		public function serve($path, $mime = false, $text = false, $throw404 = false) {
+
+			//Looking for the base file, throwing 404 if needed
+			$path = $this->getBaseFile($path);
+			if ($path === false) {
+				if ($throw404) {
+
+					//File not found, throwing a 404 if requested
+					http_response_code(404);
+					die(file_get_contents($this->config->{404}));
+
+				} else {
+
+					return false;
+
+				}
+			}
 
 			//Sanitizing range if necessary
 			if (isset($_SERVER['HTTP_RANGE'])) {
@@ -152,7 +168,9 @@
 
 				//Checking if a custom mime was requested
 				if ($mime !== false) {
+
 					$response['headers']['Content-Type'] = $mime;
+
 				}
 
 				//Preparing to serve the content
@@ -163,7 +181,6 @@
 			} else {
 			
 				//Checking if a custom mime was requested
-				$path .= '.base';
 				if ($mime !== false) {
 
 					$response['headers']['Content-Type'] = $mime;
@@ -267,8 +284,7 @@
 
 			}
 
-			echo($response['content']);
-			die();
+			die($response['content']);
 
 		}
 
@@ -290,25 +306,51 @@
 
 					mkdir($currentDir);
 
-				}		
+				} else if (file_exists($currentDir) && !is_dir($currentDir)) {
+
+					//Renaming base file, creating new folder, then moving it inside it
+					rename($currentDir, $currentDir . '.tmp');
+					mkdir($currentDir);
+					rename($currentDir . '.tmp', $currentDir . '/' . $dir . '.base');
+
+				}
 
 			}
 
 		}
 		
 		public function fileIsTooOld($file) {
-
-			$file .= '.base';
 			if (file_exists($file)) {
 				if (filemtime($file) < time() - $this->config->duration) {
+
 					return true;
+
 				}
 			} else {
+
 				return true;
+
 			}
 
 			return false;
+		}
 
+		private function getBaseFile($path, $returnPath = false) {
+			if (file_exists($path)) {
+				if (is_dir($path)) {
+
+					return $path . '.base';
+
+				} else {
+
+					return $path;
+
+				}
+			} else {
+
+				return ($returnPath ? $path : false);
+
+			}
 		}
 
 	}
