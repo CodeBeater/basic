@@ -323,9 +323,13 @@
 			if (file_exists($file)) {
 
 				$fileTime = filemtime($file);
-				if ($fileTime < time() - $this->config->duration) {
+				if ($retunTime == false) {
 
-					return ($returnTime ? $fileTime : true);
+					return $fileTime;
+
+				} else if ($fileTime < time() - $this->config->duration) {
+
+					return true;
 
 				}
 			
