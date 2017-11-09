@@ -319,13 +319,16 @@
 
 		}
 		
-		public function fileIsTooOld($file) {
+		public function fileIsTooOld($file, $returnTime = false) {
 			if (file_exists($file)) {
-				if (filemtime($file) < time() - $this->config->duration) {
 
-					return true;
+				$fileTime = filemtime($file);
+				if ($fileTime < time() - $this->config->duration) {
+
+					return ($returnTime ? $fileTime : true);
 
 				}
+			
 			} else {
 
 				return true;
