@@ -135,7 +135,7 @@
 
 			//Looking for the base file, throwing 404 if needed
 			$path = $this->getBaseFile($path);
-			if ($path === false) {
+			if ($path === false && $text === false) {
 				if ($throw404) {
 
 					//File not found, throwing a 404 if requested
