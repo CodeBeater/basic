@@ -323,7 +323,7 @@
 			if (file_exists($file)) {
 
 				$fileTime = filemtime($file);
-				if ($retunTime == false) {
+				if ($returnTime == false) {
 
 					return $fileTime;
 
