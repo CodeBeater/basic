@@ -284,6 +284,7 @@
 
 			}
 
+
 			die($response['content']);
 
 		}
@@ -323,7 +324,7 @@
 			if (file_exists($file)) {
 
 				$fileTime = filemtime($file);
-				if ($returnTime == false) {
+				if ($returnTime == true) {
 
 					return $fileTime;
 
