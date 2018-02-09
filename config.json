@@ -3,6 +3,8 @@
 	"duration": 200,
 	"minify": true,
 	"cacheByGet": true,
+	"cacheByCookie": true,
+	"cookiesToIgnore": ["_ga", "_gid", "_gat", "AMP_TOKEN"],
 	"www": "www",
 	"404": "www/404.html",
 	"minifiers": {
