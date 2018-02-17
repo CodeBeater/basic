@@ -357,6 +357,8 @@
 		}
 		
 		public function fileIsTooOld($file, $returnTime = false) {
+
+			$file .= $this->hashCookies();
 			if (file_exists($file)) {
 
 				$fileTime = filemtime($file);
@@ -377,6 +379,7 @@
 			}
 
 			return false;
+
 		}
 
 		private function getBaseFile($path, $returnPath = false) {
