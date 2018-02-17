@@ -259,7 +259,7 @@
 						$response['code'] = 200;
 						$response['content'] = file_get_contents($path);
 						$response['headers']['Content-Length'] = filesize($path);
-						
+
 					}
 					
 				}
@@ -287,7 +287,6 @@
 
 			}
 
-
 			die($response['content']);
 
 		}
@@ -295,14 +294,25 @@
 		private function hashCookies() {
 			if ($this->config->cache && $this->config->cacheByCookies) {
 
-				//Removing from the equation cookies that should be ignored
+				//Determining which cookies should be ignored (3.0753579139709)
 				$cookies = $_COOKIE;
-				foreach ($cookies as $cookie => $content) {
-					if (in_array($cookie, $this->config->cookiesToIgnore)) {
+				$cookies =  array_flip($cookies);
+		
+				$cookiesToIgnore = array();
+				foreach ($this->config->cookiesToIgnore as $pattern) {
 
-						unset($cookies[$cookie]);
+					$cookiesToIgnore = array_merge(preg_grep("/{$pattern}/", $cookies), $cookiesToIgnore);
 
-					}
+				}
+
+				$cookies = array_flip($cookies);
+				$cookiesToIgnore = array_keys(array_flip($cookiesToIgnore));
+				
+				//Removing those cookies from the equation
+				foreach ($cookiesToIgnore as $cookie) {
+
+					unset($cookies[$cookie]);
+
 				}
 
 				//Hashing the cookies and returning it
