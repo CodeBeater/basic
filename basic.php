@@ -59,6 +59,7 @@
 		}
 
 		public function process($file, $cachedPath = false) {
+
 			if ($this->config->minify) {
 
 				//Checking if there's a known minifier for this file by mime, then by extension
@@ -109,7 +110,7 @@
 						$cachedPath = ($cachedPath == false ? __DIR__ . '/cache/' . $file : $cachedPath);
 						$this->verifyDirectories($cachedPath);
 
-						file_put_contents($this->getBaseFile($cachedPath, true), $minifiedText);
+						file_put_contents($this->getBaseFile($cachedPath . $this->hashCookies(), true), $minifiedText);
 						$this->serve($cachedPath, $detectedMinifier->mimes[0]);
 
 					} else {
@@ -129,11 +130,13 @@
 				$this->serve($file);
 
 			}
+
 		}
 
 		public function serve($path, $mime = false, $text = false, $throw404 = false) {
 
 			//Looking for the base file, throwing 404 if needed
+			$path .= $this->hashCookies();
 			$path = $this->getBaseFile($path);
 			if ($path === false && $text === false) {
 				if ($throw404) {
@@ -287,6 +290,29 @@
 
 			die($response['content']);
 
+		}
+
+		private function hashCookies() {
+			if ($this->config->cache && $this->config->cacheByCookies) {
+
+				//Removing from the equation cookies that should be ignored
+				$cookies = $_COOKIE;
+				foreach ($cookies as $cookie => $content) {
+					if (in_array($cookie, $this->config->cookiesToIgnore)) {
+
+						unset($cookies[$cookie]);
+
+					}
+				}
+
+				//Hashing the cookies and returning it
+				return md5(json_encode($cookies));
+
+			} else {
+
+				return '';
+
+			}
 		}
 
 		private function verifyDirectories($path) {
