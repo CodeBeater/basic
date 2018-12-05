@@ -1,5 +1,7 @@
 <?php 
 
+	namespace DockSoftware\Basic;
+
 	class Basic {
 
 		public function __construct() {
