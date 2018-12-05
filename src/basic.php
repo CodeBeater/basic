@@ -1,6 +1,6 @@
 <?php 
 
-	namespace DockSoftware\Basic;
+	namespace CodeBeater\Basic;
 
 	class Basic {
 
