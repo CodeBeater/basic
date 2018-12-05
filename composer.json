@@ -1,5 +1,5 @@
 {
-	"name": "codebeater/basic",
+	"name": "DockSoftware/Basic",
 	"description": "A basic caching/minifying engine made purely with PHP.",
 	"license": "Apache",
     "require": {
@@ -10,7 +10,7 @@
     },
     "autoload": {
         "psr-0" : {
-            "DockSoftware\\Klein" : "src"
+            "DockSoftware\\Basic" : "src"
         }
     }
 }
